@@ -20,7 +20,7 @@ answers = answers.replace("\r", "\n").split("\n\n")
 answers = [ans for ans in answers if len(normalize(ans).split()) >= 6]
 
 norm_answers = [normalize(ans).replace("kazakhstan", "") for ans in answers]
-norm_answers = [ans for ans in norm_answers if len(ans.split()) >= 6]
+norm_answers = [ans for ans in norm_answers if len(ans.split()) >= 5]
 
 norm_answers = norm_answers * 1
 
