@@ -17,9 +17,10 @@ app.debug = True
 def hello():
 	text = str(request.form["text"].encode('utf-8'))
 	p = generate_answer(text);
+	print(p)
 	resp = Response(response=p,
                     status=200,
-                    mimetype="application/json")
+                    mimetype="text/plain")
 	return resp
 
 if __name__ == "__main__":
