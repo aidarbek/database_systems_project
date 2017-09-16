@@ -1,3 +1,4 @@
+ #!/usr/bin/env python # -*- coding: utf-8 -*-
 import string
 import re
 from sklearn.feature_extraction.text import CountVectorizer
@@ -38,10 +39,18 @@ regr.fit(train_answers, Y)
 
 
 def generate_answer(userInput):
-	userInput = unicode(userInput, "utf-8")
-	words = normalize(userInput)
-	user_vector = vectorizer.transform([words])
-	return answers[regr.predict(user_vector)[0]]
+	no_ans = "Sorry, I didn't understand your request"
+	try:
+		userInput = unicode(userInput, "utf-8")
+		words = normalize(userInput)
+		user_vector = vectorizer.transform([words])
+		ans = answers[regr.predict(user_vector)[0]]
+		prob = regr.predict_proba(user_vector[0])
+		if np.max(prob) < 0.05:
+			ans = no_ans
+		return ans
+	except:
+		return no_ans
 def main():
 	print(generate_answer("What is JSC?"))
 	print("------")
@@ -82,6 +91,8 @@ def main():
 	print(generate_answer("additional paid vacation dated for people working in hazardous conditions"))
 	print("------")
 	print(generate_answer("how work permits are granted?"))
+	print("------")
+	print(generate_answer(u"КОгда у Айдарбека месячные?"))
 
 if __name__ == "__main__":
 	main()
