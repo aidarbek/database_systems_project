@@ -17,6 +17,7 @@ app.debug = True
 def hello():
 	text = str(request.form["text"].encode('utf-8'))
 	p = generate_answer(text);
+	print("INPUT: " + text)
 	print(p)
 	resp = Response(response=p,
                     status=200,
