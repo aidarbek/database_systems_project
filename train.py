@@ -46,7 +46,7 @@ def generate_answer(userInput):
 		user_vector = vectorizer.transform([words])
 		ans = answers[regr.predict(user_vector)[0]]
 		prob = regr.predict_proba(user_vector[0])
-		if np.max(prob) < 0.05:
+		if np.max(prob) < 0.02:
 			ans = no_ans
 		return ans
 	except:
@@ -92,7 +92,7 @@ def main():
 	print("------")
 	print(generate_answer("how work permits are granted?"))
 	print("------")
-	print(generate_answer(u"КОгда у Айдарбека месячные?"))
+	print(generate_answer(u"КОгда у Айдарбека месячные?")) # X
 
 if __name__ == "__main__":
 	main()
