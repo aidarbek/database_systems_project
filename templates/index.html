@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Welcome</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/uploads/login.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  </head>
+  <body class="page-bg">
+
+    <nav class="navbar navbar-expand-lg navbar-dark container-fluid">
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+	    <span class="navbar-toggler-icon"></span>
+	  </button>
+	  <div class="collapse navbar-collapse container" id="navbarNav">
+	    <ul class="navbar-nav">
+	      <li class="nav-item active">
+	      	<a class="nav-link text-dark" href="#">Home <span class="sr-only">(current)</span></a>        
+	      </li>
+	    </ul>
+	  </div>
+	</nav>
+
+	<div class="front-card row">
+		<div class="col-sm-7">
+			<div class="front-welcome-text">
+				<h2>Welcome to Twitter.</h2>
+				<p>Connect with your friends — and other 
+				fascinating people. Get in-the-moment 
+				updates on the things that interest you. And watch 
+				events unfold, in real time, from every angle.</p>
+			</div>
+		</div>
+		<div class="col-sm-5">
+			<div class="front-signin">
+				<form class="p-3 mb-2 bg-primary text-white rounded">
+				  <div class="form-group">
+				    <input type="text" class="form-control" id="handle_login" aria-describedby="handleHelp" placeholder="User handle" name="handle">
+				  </div>
+				  <div class="form-group">
+				    <input type="password" name="password_login" class="form-control" id="password_login" placeholder="Password">
+				  </div>
+				  <button type="button" id="login" class="btn btn-primary">Log In</button>
+				</form>
+
+				<form class="p-3 mb-2 bg-primary text-white rounded">
+					<div class="form-group">
+						<div id="alert-field"></div>
+					    <input type="text" class="form-control" id="name" placeholder="Enter Full Name">
+					</div>
+					 <div class="form-group">
+					    <input type="text" class="form-control" id="handle" placeholder="Enter handle">
+					 </div>
+					  <div class="form-group">
+					    <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+					    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+					  </div>
+					  <div class="form-group">
+						<input type="phone" class="form-control" id="phone" aria-describedby="phone" placeholder="Phone number">
+					  </div>
+					  <div class="form-group">
+					    <input type="password" class="form-control" id="password" placeholder="Password">
+					  </div>
+					  <button type="button" id="register" class="btn btn-primary">Sign In</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<footer class="footer row">
+		<p>Created by Almas Kontorbayev and Aidarbek Suleimenov</p>
+	</footer>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+   
+  </body>
+  	<script>
+	$(document).ready(function(){
+
+		$("#register").click(function(){
+			var data = {};
+			data["email"] = $("#email").val();
+			data["handle"] = $("#handle").val();
+			data["full_name"] = $("#name").val();
+			data["password"] = $("#password").val();
+			data["phone"] = $("#phone").val();
+			if(data["email"].length == 0 || data["handle"].length == 0 || data["full_name"].length == 0 || data["password"].length == 0 || data["phone"].length == 0){
+				$("#alert-field").html('<div class="alert alert-danger" role="alert">You need to fill all fields</div>');
+				return;
+			}
+			$.ajax({url: "http://localhost:5000", data: data, method: "POST"}).done(function(res){
+				res = JSON.parse(res);
+				if("success" in res){
+					$("#alert-field").html('<div class="alert alert-success" role="alert">' + res["success"] + '</div>');
+				}
+				else if("error" in res){
+					$("#alert-field").html('<div class="alert alert-danger" role="alert">' + res["error"] + '</div>');
+				}
+				$("#email").val("");
+				$("#handle").val("");
+				$("#name").val("");
+				$("#password").val("");
+				$("#phone").val("");
+			});
+		});
+
+		$("#login").click(function(){
+			var data = {};
+			data["handle"] = $("#handle_login").val();
+			data["password"] = $("#password_login").val();
+			console.log(data);
+			$.ajax({url: "http://localhost:5000/login", data: data, method: "POST"}).done(function(res){
+				res = JSON.parse(res);
+				if("success" in res){
+					window.location.href = "/"
+				}
+			});
+		});
+	});
+</script>
+</html>

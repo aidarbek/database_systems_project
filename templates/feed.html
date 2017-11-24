@@ -1,0 +1,277 @@
+<html>
+
+<head>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+<link href="/uploads/open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
+
+<style>
+
+body{
+	margin-top: 80px;
+	
+}
+
+</style>
+
+</head>
+
+<body>
+	<nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light container">
+	  <span class="navbar-brand mb-0 h1">Twitter</span>
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+	    <span class="navbar-toggler-icon"></span>
+	  </button>
+	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+	  	<ul class="navbar-nav mr-auto">
+	      <li class="nav-item active">
+	        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+	      </li>
+	      <li class="nav-item active">
+	        <a class="nav-link" href="/notification">
+	        	Notifications <span class="badge badge-primary" id="notificationNum">0</span>
+	        </a>
+	      </li>
+	      <li class="nav-item dropdown">
+	        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	          @{{handle}}
+	        </a>
+	        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+	          <a class="dropdown-item" href="/{{handle}}">My page</a>
+	          <a class="dropdown-item" href="/settings">Settings</a>
+	          <div class="dropdown-divider"></div>
+	          <a class="dropdown-item" href="/logout">Log out</a>
+	        </div>
+	      </li>
+	    </ul>
+	  </div>
+
+	  <form class="form-inline my-1 my-lg-0" action="http://localhost:5000/search" method="get">
+		<input class="form-control mr-sm-2" name="q" type="primary" placeholder="Search" aria-label="Search">
+		<button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+	  </form>
+
+	</nav>
+	<div class="container">
+		<div class="row">
+		    <div class="col-6 offset-3">
+		    	<div id = "addForm">
+		    		<textarea id="content" class="form-control" placeholder="What are you doing?"></textarea>
+		    		<br>
+		    		<div id="imgPreview">
+		    		</div>
+		    		<br>
+		    		<form id="imageForum" action="javascript:submitForm();" method="post" enctype = "multipart/form-data">
+					    <div>
+					        <input type="file" id="file" name="file" />
+					    </div>
+					</form>
+		    		<br>
+		    		<button class="btn btn-primary" id="addTweet">Tweet</button>
+		    	</div>
+		    	<hr>
+		    	<div id = "feedList">
+		    	</div>
+		    	<div class="col-6 offset-3">
+			    	<button class="btn btn-primary" id="next">
+			    		Next tweets
+			    	</button>
+		    	</div>
+		    </div>
+		</div>
+		
+	</div>
+
+
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
+<script>
+	var name = "{{full_name}}";
+	var email = "{{email}}";
+	var handle = "{{handle}}";
+	var files = [];
+
+	function getNotificationNum(){
+		console.log("YEAH!");
+		$.ajax({
+                url: '/notification/count',
+                type: 'GET',
+                data: {},
+                async: false,
+                success: function (data) {
+					data = JSON.parse(data);
+					$("#notificationNum").html(data["count"]);
+                },
+            });
+	}
+	getNotificationNum();
+	window.setInterval(getNotificationNum, 2000);
+
+	function submitForm() {
+        var formData = new FormData($('#imageForum')[0]);
+
+            $.ajax({
+                url: '/upload',
+                type: 'POST',
+                data: formData,
+                async: false,
+                success: function (data) {
+					data = JSON.parse(data);
+                	$("#imgPreview").append("<img src='"+data["file_url"]+"' width='100px'>");
+                	$("#file").val("");
+                	files.push(data["file_id"]);
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+
+            return false;
+    }
+    function delete_tweet(tweet_id){
+    		$("#tweet-"+tweet_id).html("<div class='card-body'>Tweet deleted</div>");
+    		var data = {"tweet_id": tweet_id}
+    		$.ajax({url: "http://localhost:5000/tweet/delete", data: data, method: "POST"}).done(function(res){
+    				console.log(res);
+    		});
+    	}
+
+	$(document).ready(function(){
+
+		var last = 0;
+    	
+    	$("#file").change(submitForm);
+    	function setLast(val){
+    		last = val;
+    	}
+
+		function getFeed(){
+			console.log(last);
+			if(last == 0){
+				$("#feedList").html("");
+			}
+			data = {};
+			if(last != 0)
+				data["last"] = last;
+
+			$.ajax({url: "http://localhost:5000/tweet/feed", data: data, method: "GET"}).done(function(res){
+
+					res = JSON.parse(res);
+					if(res.length != 10){
+						$("#next").remove();
+					}
+					for(var i = 0; i < res.length; i++){
+
+						var content = res[i]["content"];
+						var creator = res[i]["Creator"];
+						var likes = res[i]["likes"];
+						var liked = res[i]["liked"];
+						var tweet_id = res[i]["tweet_id"];
+
+						var tweet = '<div class="card" id="tweet-'+tweet_id+'">';
+						tweet += '<div class="card-body">';
+
+						if(creator == handle){
+							tweet += '<div class="text-right">';
+							tweet += '<button class="btn btn-link" onclick="delete_tweet('+tweet_id+')">';
+							tweet += '<span class="oi oi-trash btn-sm" title="icon name" aria-hidden="true"></span>';
+							tweet += '</button>';
+							tweet += '</div>';
+						}
+
+
+						tweet += "<h6 class='card-subtitle mb-2 text-muted'><a href = '/"+creator+"'><b>";
+						tweet += "@" + creator + "</b></a></h6>";
+						tweet += "<p class='card-text'>" + content;
+
+						if(res[i]["files"].length > 0){
+							tweet += '<div id="carouselExampleControls'+tweet_id.toString()+'" class="carousel slide"';
+							tweet += 'slide" data-ride="carousel">';
+							tweet += '<div class="carousel-inner">';
+							for(var j = 0; j < res[i]["files"].length; j++){
+							    var file_link = res[i]["files"][j]["file_url"];
+							    if(j == 0)
+							    	tweet += '<div class="carousel-item active"><img class="d-block w-100" src="'+file_link+'"></div>';
+							    else 
+							    	tweet += '<div class="carousel-item"><img class="d-block w-100" src="'+file_link+'"></div>';
+							}
+							tweet += '</div><a class="carousel-control-prev" href="#carouselExampleControls'+tweet_id.toString()+'" role="button" data-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="sr-only">Previous</span></a> <a class="carousel-control-next" href="#carouselExampleControls'+tweet_id.toString()+'" role="button" data-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="sr-only">Next</span></a></div><br>';
+						}
+						tweet += "</p> <br>";
+						tweet += "</div>";
+						tweet += '<div class="card-footer">'
+						
+						if(liked)
+							tweet += '<button id="like_button" tweet-id='+tweet_id+' like-num="'+likes+'" class="card-link btn btn-danger btn-sm" id=><span class="oi oi-heart btn-sm" title="icon name" aria-hidden="true"></span> <span id="likes">'+likes+'</span></button>';
+						else
+							tweet += '<button id="like_button" tweet-id='+tweet_id+' like-num="'+likes+'" class="card-link btn btn-light btn-sm"><span class="oi oi-heart btn-sm" title="icon name" aria-hidden="true"></span> <span id="likes">'+likes+'</span></button>';
+						tweet += "</div>";
+						tweet += "</div><br>";
+
+						last = tweet_id;
+
+						$("#feedList").append(tweet);
+					}
+			});
+		}
+		$("#addTweet").click(function(){
+
+    		var content = $("#content").val();
+    		var n = content.length;
+
+    		if(n == 0)
+    		{
+    			alert("Your tweet can not be empty");
+    			return;
+    		}
+    		if(n > 140){
+    			alert("Your tweet exceeds limit of 140 characters");
+    			return;
+    		}
+
+    		$("#content").val("");
+    		$("#imgPreview").html("");
+    		f = files.join(",");
+    		data = {"text": content, "files": f};
+    		$.ajax({url: "http://localhost:5000/tweet", data: data, method: "POST"}).done(function(res){
+
+					console.log(res);
+
+					res = JSON.parse(res);
+					if("success" in res){
+						alert("You added tweet!");
+					}
+					setLast(0);
+					getFeed();
+			});
+    	});
+    	
+
+		$(document).on("click", "#like_button", function(){
+			var likes = parseInt($(this).attr("like-num"));
+			var tweet_id = parseInt($(this).attr("tweet-id"));
+
+			if($(this).hasClass("btn-danger")){
+				$(this).removeClass("btn-danger");
+				$(this).addClass("btn-light");
+				likes -= 1;
+			}else{
+				$(this).removeClass("btn-light");
+				$(this).addClass("btn-danger");
+				likes += 1;
+			}
+			$.ajax({url: "http://localhost:5000/like", data: {"tweet_id": tweet_id}, method: "POST"})
+			$(this).attr("like-num", likes);
+			$(this).children("#likes").html(likes.toString());
+		});
+		$('div .carousel').carousel();
+		$("#next").click(getFeed);
+		getFeed();
+	});
+</script>
+</body>
+
+</html>

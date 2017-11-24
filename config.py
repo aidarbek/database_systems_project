@@ -1,0 +1,7 @@
+
+DB = {
+	"host": "localhost",
+	"user": "root",
+	"password": "",
+	"db": "db_course"
+}
